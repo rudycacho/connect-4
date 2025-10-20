@@ -81,7 +81,7 @@ bool ConnectFour::actionForEmptyHolder(BitHolder &holder) {
     }
     return true;
 }
-
+// winner logic
 Player* ConnectFour::checkForWinner() {
     // directions on board 
     const int direction[4][2] = {
@@ -127,7 +127,7 @@ Player* ConnectFour::checkForWinner() {
     }
     return nullptr;
 }
-
+// check for tie (rare)
 bool ConnectFour::checkForDraw() {
     bool boardFull = true;
     _grid->forEachSquare([&boardFull](ChessSquare* square, int,int){
@@ -137,7 +137,7 @@ bool ConnectFour::checkForDraw() {
     });
     return boardFull && !checkForWinner();
 }
-
+// stops the game
 void ConnectFour::stopGame() {
     _grid->forEachSquare([](ChessSquare* square, int x, int y) {
         square->destroyBit();
@@ -172,7 +172,7 @@ void ConnectFour::setStateString(const std::string &s) {
         }
     });
 }
-
+// ai update
 void ConnectFour::updateAI() {
     int bestVal = -1000;
     int bestColumn = -1;
@@ -181,7 +181,6 @@ void ConnectFour::updateAI() {
     for(int col = 0; col< 7; col++){
         int row = getLowestEmptyRow(state, col);
         if(row == -1) continue;
-
         // make move
         setCell(state, col, row, '1');
         int moveVal = -negamax(state, 0, -1000, 1000, -1);
@@ -197,6 +196,7 @@ void ConnectFour::updateAI() {
         ChessSquare* square = _grid->getSquare(bestColumn,0);
         actionForEmptyHolder(*square);
         Log::log(INFO, "AI MADE A MOVE");
+        // temp don't forget to remove
         std::cout << "Column: " + square->getColumn() << std::endl;
     }
 }
@@ -225,23 +225,20 @@ int ConnectFour::negamax(std::string& state, int depth, int alpha, int beta, int
     }
     return bestVal;
 }
-
+// helper to get lowest empty row for AIs
 int ConnectFour::getLowestEmptyRow(const std::string& state, int col){
-    int width = _gameOptions.rowX;
-    int height = _gameOptions.rowY;
-    for(int row = height - 1; row >=0; row--){
-        if(state[row * width + col] == '0') return row;
+    for(int row = _gameOptions.rowY - 1; row >=0; row--){
+        if(state[row * _gameOptions.rowX + col] == '0') return row;
     }
     return -1;
 }
-
 // helper function for setting the value in the state string
 void ConnectFour::setCell(std::string& state, int x, int y, char value){
-    int width = _gameOptions.rowX;
-    state[y * width + x] = value;
+    state[y * _gameOptions.rowX + x] = value;
 }
-
+// evaluates the score for the board
 int ConnectFour::evaluateAiBoard(const std::string& state){
+    // don't want to spam this long thing all over
     int width = _gameOptions.rowX;
     int height = _gameOptions.rowY;
 
