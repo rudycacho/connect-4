@@ -172,6 +172,7 @@ void ConnectFour::setStateString(const std::string &s) {
         }
     });
 }
+// please actually update in github
 // ai update
 void ConnectFour::updateAI() {
     int bestVal = -1000;
