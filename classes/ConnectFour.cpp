@@ -94,17 +94,15 @@ Player* ConnectFour::checkForWinner() {
             Bit* bit = square->bit();
             // check if null
             if(!bit) continue;
-
             Player* owner = bit->getOwner();
             if(!owner) continue;
-
             // check each direction
             for (auto& dir : direction){
                 int dirX = dir[0];
                 int dirY = dir[1];
                 int count = 1;
 
-                // check next 3
+                // check next 3 chess squares
                 for(int step = 1; step < 4; step++){
                     int nextX = x + dirX * step;
                     int nextY = y + dirY * step;
@@ -206,7 +204,7 @@ int ConnectFour::negamax(std::string& state, int depth, int alpha, int beta, int
     // get score
     int score = evaluateAiBoard(state);
     // 
-    if(depth >= 6 || abs(score) == 1000 || isAIBoardFull(state)){
+    if(depth >= 3 || abs(score) == 1000 || isAIBoardFull(state)){
         return playerColor * score;
     }
     // min valued
