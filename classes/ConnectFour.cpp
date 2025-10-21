@@ -31,6 +31,9 @@ void ConnectFour::setUpBoard() {
     // Initialize all squares
     _grid->initializeSquares(80, "boardsquare.png");
 
+    // make sure game is not ended
+    gameEnded = false;
+
     // enable AI
     Log::log(INFO, "Game has started!");
     startGame();
@@ -46,40 +49,42 @@ Bit* ConnectFour::createPiece(int pieceType) {
 }
 
 bool ConnectFour::actionForEmptyHolder(BitHolder &holder) {
-    // cast bitholder as chess square to use getcolumn()
-    ChessSquare* selected = static_cast<ChessSquare*>(&holder);
-    int selectedColumn = selected->getColumn();
+    if(!gameEnded){
+        // cast bitholder as chess square to use getcolumn()
+        ChessSquare* selected = static_cast<ChessSquare*>(&holder);
+        int selectedColumn = selected->getColumn();
 
-    // find the lowest point in the row
-    int dropToRow = -1;
-    for(int i = _gameOptions.rowY- 1; i >= 0; i--){
-        ChessSquare* target = _grid->getSquare(selectedColumn,i);
-        if(target && !target->bit()){
-            dropToRow = i;
-            break;
+        // find the lowest point in the row
+        int dropToRow = -1;
+        for(int i = _gameOptions.rowY- 1; i >= 0; i--){
+            ChessSquare* target = _grid->getSquare(selectedColumn,i);
+            if(target && !target->bit()){
+                dropToRow = i;
+                break;
+            }
         }
-    }
-    // create piece depending on whos turn it is
-    Bit *bit = PieceForPlayer(getCurrentPlayer()->playerNumber() == 0 ? HUMAN_PLAYER : AI_PLAYER);
-    Log::log(INFO, "Bit Created!");
-    // get the lowest empty holder and set all the good stuff
-    ChessSquare* dropHolder = _grid->getSquare(selectedColumn,dropToRow);
-    bit->setPosition(dropHolder->getPosition());
-    dropHolder->setBit(bit);
-    Log::log(INFO, "Bit Set!");
+        // create piece depending on whos turn it is
+        Bit *bit = PieceForPlayer(getCurrentPlayer()->playerNumber() == 0 ? HUMAN_PLAYER : AI_PLAYER);
+        Log::log(INFO, "Bit Created!");
+        // get the lowest empty holder and set all the good stuff
+        ChessSquare* dropHolder = _grid->getSquare(selectedColumn,dropToRow);
+        bit->setPosition(dropHolder->getPosition());
+        dropHolder->setBit(bit);
+        Log::log(INFO, "Bit Set!");
 
-    // end turn methods
-    endTurn();
-    Player* winner = checkForWinner();
-    if(winner){
-        Log::log(INFO, "WINNER HAS BEEN FOUND!");
-        stopGame();
+        // end turn methods
+        endTurn();
+        Player* winner = checkForWinner();
+        if(winner){
+            Log::log(INFO, "WINNER HAS BEEN FOUND!");
+            gameEnded = true;
+        }
+        if(checkForDraw()){
+            Log::log(INFO, "DRAW!");
+            gameEnded = true;
+        }
+        return true;
     }
-    if(checkForDraw()){
-        Log::log(INFO, "DRAW!");
-        stopGame();
-    }
-    return true;
 }
 // winner logic
 Player* ConnectFour::checkForWinner() {
@@ -140,6 +145,7 @@ void ConnectFour::stopGame() {
     _grid->forEachSquare([](ChessSquare* square, int x, int y) {
         square->destroyBit();
     });
+    gameEnded = false;
     Log::log(INFO, "GAME STOPPED!");
 }
 
@@ -204,7 +210,7 @@ int ConnectFour::negamax(std::string& state, int depth, int alpha, int beta, int
     // get score
     int score = evaluateAiBoard(state);
     // 
-    if(depth >= 3 || abs(score) == 1000 || isAIBoardFull(state)){
+    if(depth >= 6 || abs(score) == 1000 || isAIBoardFull(state)){
         return playerColor * score;
     }
     // min valued
@@ -256,11 +262,13 @@ int ConnectFour::evaluateAiBoard(const std::string& state){
             else if (cell == '2') humanCount++;
         }
 
+        // AI possible scores
         if (aiCount > 0 && humanCount == 0) {
             if (aiCount == 4) score += 1000;
             else if (aiCount == 3) score += 100;
             else if (aiCount == 2) score += 10;
         }
+        // human possible scores (bad for AI hence the minus)
         if (humanCount > 0 && aiCount == 0) {
             if (humanCount == 4) score -= 1000;
             else if (humanCount == 3) score -= 100;

@@ -55,6 +55,7 @@ private:
     void        promoteToKing(Bit& bit, int y);
     void        getBoardPosition(BitHolder &holder, int &x, int &y) const;
     bool        isValidSquare(int x, int y) const;
+    bool        gameEnded;
 
     // Board representation
     Grid*        _grid;
