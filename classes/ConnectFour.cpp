@@ -29,7 +29,7 @@ void ConnectFour::setUpBoard() {
     _gameOptions.rowY = 6;
 
     // Initialize all squares
-    _grid->initializeSquares(80, "boardsquare.png");
+    _grid->initializeSquares(80, "square.png");
 
     // make sure game is not ended
     gameEnded = false;
